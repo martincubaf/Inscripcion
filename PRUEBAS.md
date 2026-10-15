@@ -58,3 +58,7 @@ La suite local ahora contiene 11 pruebas aprobadas, incluyendo que la configurac
 El 13 de octubre de 2026 se confirmó la implementación de Apps Script, se ejecutó `setupSheet` sin errores y se verificó que la hoja sigue privada. Se probó el endpoint real con un registro ficticio: dos solicitudes devolvieron `ok: true`, `saved: true` y el mismo ID. Se leyó mediante la interfaz de Sheets el rango A1:R4: 18 columnas, una única fila y las restantes vacías. La fecha 2026-10-13 y la hora 16:11:27 se contrastaron con el instante UTC de la petición y el huso -05:00 de Perú. Google rechazó clave incorrecta y celular inválido. Se comprobó también el servidor de la aplicación contra Google real, usando el mismo ID y una configuración exclusiva de prueba, sin habilitar públicamente las inscripciones.
 
 Pendiente: política aprobada, publicación del organizador en Vercel y prueba desde el dominio definitivo. No se modificaron los datos de la pestaña original. La fila técnica se dejó claramente identificada para revisión.
+
+## Corrección de origen — 14 de octubre de 2026
+
+Se corrigió la comparación estricta que bloqueaba el alias de main. La suite local pasa 14 pruebas: ambos dominios conocidos funcionan con cualquiera de los dos configurado como PUBLIC_ORIGIN; se rechazan dominios ajenos, imitaciones, puertos/protocolos distintos y origen ausente. Se normalizan espacios y barra final en la configuración. La compilación de producción pasó. La corrección de origen todavía no se ha aplicado al despliegue del usuario ni se ha verificado en ese dominio actualizado.

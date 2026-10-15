@@ -289,15 +289,94 @@ test("Apps Script simulado: limita envíos y neutraliza fórmulas", () => {
   assert.equal(gas.send().code, "RATE_LIMIT");
 });
 
-test('configuración de Google: genera la clave una vez y conserva el destino de la hoja', () => {
+test("configuración de Google: genera la clave una vez y conserva el destino de la hoja", () => {
   const gas = gasHarness();
   const props = {};
-  gas.context.PropertiesService = { getScriptProperties: () => ({ getProperty: key => props[key], setProperty: (key, value) => { props[key] = value; } }) };
+  gas.context.PropertiesService = {
+    getScriptProperties: () => ({
+      getProperty: (key) => props[key],
+      setProperty: (key, value) => {
+        props[key] = value;
+      },
+    }),
+  };
   gas.context.Utilities.getUuid = randomUUID;
   gas.context.setupSheet();
   const secret = props.WRITE_SECRET;
   assert.match(secret, /^[a-f0-9]{64}$/);
   gas.context.setupSheet();
   assert.equal(props.WRITE_SECRET, secret);
-  assert.equal(gas.context.spreadsheetId_(), '1CFRPtNyyhpmA8kvR7uVb28ui2sl2pd_CJhv9jS2p7Xc');
+  assert.equal(
+    gas.context.spreadsheetId_(),
+    "1CFRPtNyyhpmA8kvR7uVb28ui2sl2pd_CJhv9jS2p7Xc",
+  );
+});
+
+test("CONSEVIA: acepta producción y el alias de main con el mismo ajuste", async () => {
+  const domains = [
+    "https://inscripcion-nine.vercel.app",
+    "https://inscripcion-git-main-neslab.vercel.app",
+  ];
+  for (const configured of domains) {
+    for (const origin of domains) {
+      const id = randomUUID();
+      const result = await handle(
+        request({ id }, origin),
+        { ...env, PUBLIC_ORIGIN: configured },
+        async () => Response.json({ ok: true, saved: true, id }),
+      );
+      assert.equal(result.status, 200);
+      assert.equal((await result.json()).id, id);
+    }
+  }
+});
+
+test("CONSEVIA: rechaza otros dominios, imitaciones y origen ausente", async () => {
+  const production = {
+    ...env,
+    PUBLIC_ORIGIN: "https://inscripcion-nine.vercel.app",
+  };
+  const denied = [
+    "https://otro-proyecto.vercel.app",
+    "https://inscripcion-nine.vercel.app.ejemplo.com",
+    "https://inscripcion-nine.vercel.app:8443",
+    "http://inscripcion-nine.vercel.app",
+    "https://inscripcion-git-main-neslab.vercel.app.ejemplo.com",
+    "null",
+    "",
+  ];
+  for (const origin of denied) {
+    const result = await handle(request({}, origin), production, async () => {
+      throw Error("No debe contactar Google");
+    });
+    assert.equal(result.status, 403);
+    assert.equal((await result.json()).message, "Origen no permitido.");
+  }
+  const ordinary = await handle(
+    request({}, "https://inscripcion-git-main-neslab.vercel.app"),
+    env,
+  );
+  assert.equal(
+    ordinary.status,
+    403,
+    "Un proyecto distinto no debe heredar los alias de CONSEVIA",
+  );
+});
+
+test("origen configurado: normaliza espacios y barra final, y admite lista explícita", async () => {
+  for (const configured of [
+    " https://inscripcion-nine.vercel.app/ ",
+    "https://example.com, https://otro.example/",
+  ]) {
+    const origin = configured.includes("inscripcion")
+      ? "https://inscripcion-git-main-neslab.vercel.app"
+      : "https://otro.example";
+    const id = randomUUID();
+    const result = await handle(
+      request({ id }, origin),
+      { ...env, PUBLIC_ORIGIN: configured },
+      async () => Response.json({ ok: true, saved: true, id }),
+    );
+    assert.equal(result.status, 200);
+  }
 });

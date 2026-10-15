@@ -11,6 +11,24 @@ const json = (body, status = 200) =>
 function sign(text, secret) {
   return createHmac("sha256", secret).update(text).digest("hex");
 }
+// Dominios exactos del mismo proyecto CONSEVIA; no se admite *.vercel.app.
+const CONSEVIA_ORIGINS = [
+  "https://inscripcion-nine.vercel.app",
+  "https://inscripcion-git-main-neslab.vercel.app",
+];
+function allowedOrigins(env) {
+  const origins = new Set(
+    String(env.PUBLIC_ORIGIN || "")
+      .split(",")
+      .map((origin) => origin.trim().replace(/\/+$/, ""))
+      .filter(Boolean),
+  );
+  // Si está configurado uno de los dos dominios del proyecto, admite su alias.
+  if (CONSEVIA_ORIGINS.some((origin) => origins.has(origin))) {
+    for (const origin of CONSEVIA_ORIGINS) origins.add(origin);
+  }
+  return origins;
+}
 export async function handle(request, env = process.env, fetcher = fetch) {
   const configured = Boolean(
     env.APPS_SCRIPT_URL &&
@@ -42,7 +60,7 @@ export async function handle(request, env = process.env, fetcher = fetch) {
       { message: "Las inscripciones todavía no están habilitadas." },
       503,
     );
-  if (request.headers.get("origin") !== env.PUBLIC_ORIGIN)
+  if (!allowedOrigins(env).has(request.headers.get("origin")))
     return json({ message: "Origen no permitido." }, 403);
   if (!request.headers.get("content-type")?.includes("application/json"))
     return json({ message: "Formato no permitido." }, 415);
