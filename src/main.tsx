@@ -9,6 +9,7 @@ import {
   callao,
 } from "../shared/validation.js";
 import "./styles.css";
+import { readDraft, saveDraft, clearDraft } from "./draft.js";
 type Data = Record<string, string> & { consent?: never };
 type Config = {
   ready: boolean;
@@ -30,9 +31,18 @@ function Arrow() {
   );
 }
 function App() {
-  const [data, setData] = useState<Data>({});
-  const [consent, setConsent] = useState(false);
-  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [draft] = useState(() => {
+    try {
+      return readDraft(window.sessionStorage);
+    } catch {
+      return null;
+    }
+  });
+  const [data, setData] = useState<Data>(draft?.data || {});
+  const [consent, setConsent] = useState(draft?.consent || false);
+  const [marketingConsent, setMarketingConsent] = useState(
+    draft?.marketingConsent || false,
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [config, setConfig] = useState<Config | null>(null);
   const [busy, setBusy] = useState(false);
@@ -41,10 +51,25 @@ function App() {
   const [programOpen, setProgramOpen] = useState(false);
   const programDialog = useRef<HTMLDialogElement>(null);
   const gate = useRef(false);
-  const id = useRef(crypto.randomUUID());
-  const sentData = useRef("");
+  const id = useRef(draft?.id || crypto.randomUUID());
+  const sentData = useRef(draft?.sentData || "");
   const form = useRef<HTMLFormElement>(null);
   const successBox = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    try {
+      if (success) clearDraft(window.sessionStorage);
+      else
+        saveDraft(window.sessionStorage, {
+          data,
+          consent,
+          marketingConsent,
+          id: id.current,
+          sentData: sentData.current,
+        });
+    } catch {
+      /* Navegadores con almacenamiento bloqueado. */
+    }
+  }, [data, consent, marketingConsent, busy, success]);
   useEffect(() => {
     fetch("/api/registration")
       .then((r) => r.json())
@@ -457,7 +482,11 @@ function App() {
                         )}
                       </div>
                       <div className="full">
-                        {field("address", "Dirección del establecimiento")}
+                        {field(
+                          "address",
+                          "Dirección del establecimiento",
+                          true,
+                        )}
                       </div>
                       <div className="field full">
                         <label htmlFor="district">
@@ -522,13 +551,8 @@ function App() {
                       inscripción al evento.
                     </span>
                   </label>
-                  <a
-                    className="privacy-link"
-                    href="/privacidad"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Leer política de privacidad ↗
+                  <a className="privacy-link" href="/privacidad">
+                    Leer política de privacidad
                   </a>
                   {errors.consent && (
                     <small className="error">{errors.consent}</small>

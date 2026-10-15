@@ -105,7 +105,7 @@ function validate(input) {
   if (data.profession === "Otro") required.push("otherProfession");
   else data.otherProfession = "";
   if (data.attends === "Sí") {
-    required.push("establishment", "establishmentType", "district");
+    required.push("establishment", "establishmentType", "address", "district");
     if (data.district === "Otra localidad") required.push("otherLocation");
     else data.otherLocation = "";
   } else

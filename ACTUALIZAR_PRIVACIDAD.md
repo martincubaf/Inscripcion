@@ -39,7 +39,7 @@ Después del despliegue, abre en incógnito:
 - Formulario: https://inscripcion-nine.vercel.app
 - Política: https://inscripcion-nine.vercel.app/privacidad
 
-El enlace «Leer política de privacidad» abre una pestaña nueva y conserva los datos del formulario. La publicidad no es obligatoria para inscribirse. Un formulario abierto antes del despliegue debe recargarse para mostrar la nueva política y sus casillas.
+El enlace «Leer política de privacidad» abre la política en la misma pestaña. Un borrador temporal de sesión conserva los datos al regresar y al recargar; se descarta tras dos horas sin actualizarlo y se elimina después de confirmar la inscripción. La publicidad no es obligatoria para inscribirse. Un formulario abierto antes del despliegue debe recargarse para mostrar la nueva política y sus casillas.
 
 ## Gestión de los 30 días y solicitudes
 

@@ -8,10 +8,16 @@ React, TypeScript, Tailwind y Vite, con API de servidor para Vercel o Netlify y 
 - Política en `/privacidad`, preparada con los datos del organizador: Innovagen Diagnostic Group, RUC 20615552241, laboratorio@innovagen.pe y domicilio confirmado.
 - Consentimiento de inscripción obligatorio y publicidad opcional por correo y WhatsApp, desmarcada por defecto.
 - Conservación de 30 días desde la inscripción para ambas finalidades. La fecha de vencimiento se registra; el borrado es manual.
-- Integración de Google actualizada a versión 3; la hoja conserva A:R y añade S:V para autorizaciones y vencimiento. Registros anteriores no autorizan publicidad.
-- 19 pruebas automatizadas y compilación aprobadas. La integración original se comprobó con Google real el 13 de octubre; el nuevo contrato se verificó con simulaciones y publicación de Apps Script. La nueva versión pública requiere el commit/despliegue del organizador.
+- Integración de Google actualizada a versión 4; la hoja conserva A:R y añade S:V para autorizaciones y vencimiento. Registros anteriores no autorizan publicidad.
+- 22 pruebas automatizadas y compilación aprobadas. La integración original se comprobó con Google real el 13 de octubre; el nuevo contrato se verificó con simulaciones y publicación de Apps Script. La nueva versión pública requiere el commit/despliegue del organizador.
 
 **Para publicar esta entrega, leer `ACTUALIZAR_PRIVACIDAD.md`.** Incluye el estado exacto de Google, los archivos, las variables de Vercel y las tareas manuales de conservación. No se ha desplegado esta actualización en Vercel desde esta sesión.
+
+## Corrección de navegación y dirección
+
+La política se abre en la misma pestaña y el formulario restaura su borrador de `sessionStorage` al regresar o recargar, conservando campos, elecciones e identificador de reintento. Se elimina al confirmar la inscripción y se descarta al recuperarlo después de dos horas sin actualizarlo. Si el navegador bloquea el almacenamiento de sesión, no se garantiza esa recuperación.
+
+La dirección del establecimiento es obligatoria cuando se elige que atiende pacientes. Esta validación se aplica en cliente, servidor y Google. La referencia sigue siendo opcional. El texto de privacidad refleja este cambio.
 
 ## Desarrollo
 

@@ -66,6 +66,19 @@ test("obligatorios, consentimiento y correo", () => {
 test("campos condicionales y valores permitidos", () => {
   assert.ok(validate({ ...data, profession: "Otro" }).errors.otherProfession);
   assert.ok(validate({ ...data, attends: "Sí" }).errors.establishment);
+  const establishment = {
+    ...data,
+    attends: "Sí",
+    establishment: "Prueba",
+    establishmentType: "Hospital",
+    district: "Lima",
+  };
+  assert.ok(validate(establishment).errors.address);
+  assert.equal(
+    validate({ ...establishment, address: "Av. Prueba 123" }).valid,
+    true,
+  );
+  assert.equal(validate({ ...data, attends: "No", address: "" }).valid, true);
   assert.ok(
     validate({
       ...data,
