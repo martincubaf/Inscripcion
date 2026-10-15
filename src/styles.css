@@ -691,3 +691,210 @@ h1 span {
     margin-bottom: 27px;
   }
 }
+
+/* Información del evento y programa ampliado. */
+.intro {
+  position: static;
+}
+.event-details {
+  margin-top: 25px;
+  padding: 23px 21px;
+  border: 1px solid #e9dceb;
+  border-radius: 13px;
+  background: #ffffff90;
+  display: grid;
+  gap: 20px;
+}
+.event-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+.event-detail-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f5eaf5;
+  color: #9d5495;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.event-detail-icon svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.event-detail-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  color: #9a6699;
+  margin: 1px 0 5px;
+}
+.event-detail p,
+.event-detail address {
+  margin: 0;
+  color: #253353;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.7;
+}
+.event-building {
+  display: block;
+  color: #81718b;
+  font-size: 12px;
+}
+.program-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 49px;
+  width: 100%;
+  padding: 13px 19px;
+  margin-top: 20px;
+  border: 1px solid #b56aa8;
+  background: #fff9ff;
+  color: #954d92;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.program-button:hover {
+  background: #f6e9f5;
+  border-color: #945092;
+}
+.program-button svg {
+  width: 21px;
+  height: 21px;
+}
+.program-button:focus-visible,
+.program-dialog button:focus-visible,
+.program-dialog a:focus-visible {
+  outline: 2px solid #aa6aaa;
+  outline-offset: 4px;
+}
+.program-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(1100px, calc(100% - 40px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  margin: auto;
+  border: 1px solid #e8dcec;
+  border-radius: 17px;
+  color: #10254b;
+  background: white;
+  box-shadow: 0 25px 90px #17244440;
+  overflow: auto;
+}
+.program-dialog::backdrop {
+  background: #101c3c99;
+  backdrop-filter: blur(5px);
+}
+.program-dialog-header {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 26px;
+  border-bottom: 1px solid #f0e8f1;
+}
+.program-dialog-header h2 {
+  margin: 7px 0 0;
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.program-close {
+  flex-shrink: 0;
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid #e5d7e9;
+  background: #faf5fc;
+  color: #855285;
+  font-size: 27px;
+  line-height: 1;
+  cursor: pointer;
+}
+.program-image-wrap {
+  padding: 16px;
+}
+.program-image-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 9px;
+}
+.program-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 26px 24px;
+  font-size: 12px;
+}
+.program-dialog-footer a {
+  color: #934d8b;
+  text-underline-offset: 3px;
+  line-height: 1.7;
+}
+.program-dialog-footer button {
+  background: #945092;
+  color: white;
+  border: 0;
+  padding: 12px 17px;
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+}
+@media (max-width: 700px) {
+  .event-details {
+    padding: 19px 16px;
+    margin-bottom: 0;
+    gap: 19px;
+  }
+  .event-detail p,
+  .event-detail address {
+    font-size: 13px;
+  }
+  .program-button {
+    margin: 20px 0 28px;
+  }
+  .program-dialog {
+    width: calc(100% - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 13px;
+  }
+  .program-dialog-header {
+    padding: 18px 17px;
+  }
+  .program-dialog-header h2 {
+    font-size: 21px;
+  }
+  .program-image-wrap {
+    padding: 8px;
+  }
+  .program-dialog-footer {
+    padding: 12px 17px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .program-dialog-footer a {
+    text-align: center;
+  }
+  .program-dialog-footer button {
+    min-height: 44px;
+  }
+}

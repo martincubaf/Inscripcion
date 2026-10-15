@@ -36,6 +36,8 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [programOpen, setProgramOpen] = useState(false);
+  const programDialog = useRef<HTMLDialogElement>(null);
   const gate = useRef(false);
   const id = useRef(crypto.randomUUID());
   const sentData = useRef("");
@@ -56,6 +58,17 @@ function App() {
   useEffect(() => {
     if (success) successBox.current?.focus();
   }, [success]);
+  useEffect(() => {
+    if (!programOpen || !programDialog.current) return;
+    const dialog = programDialog.current;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (dialog.open) dialog.close();
+    };
+  }, [programOpen]);
   const update = (name: string, value: string) => {
     setData((old) => ({ ...old, [name]: value }));
     setErrors((old) => ({ ...old, [name]: "" }));
@@ -239,6 +252,63 @@ function App() {
             Te invitamos a formar parte del lanzamiento de CONSEVIA. Completa
             tus datos para registrar tu participación en este evento.
           </p>
+          <section
+            className="event-details"
+            aria-label="Fecha, horario y lugar del evento"
+          >
+            <div className="event-detail">
+              <span className="event-detail-icon" aria-hidden="true">
+                {" "}
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="5" width="18" height="16" rx="3" />
+                  <path d="M7 3v4m10-4v4M3 11h18m-14 5h3m4 0h3" />
+                </svg>
+              </span>
+              <div>
+                <span className="event-detail-label">FECHA</span>
+                <p>
+                  <time dateTime="2026-10-28">
+                    Miércoles 28 de octubre de 2026
+                  </time>
+                </p>
+              </div>
+            </div>
+            <div className="event-detail">
+              <span className="event-detail-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+              </span>
+              <div>
+                <span className="event-detail-label">
+                  HORARIO · HORA DE PERÚ
+                </span>
+                <p>
+                  <time dateTime="2026-10-28T19:00:00-05:00">07:00 p. m.</time>{" "}
+                  –{" "}
+                  <time dateTime="2026-10-28T22:00:00-05:00">10:00 p. m.</time>
+                </p>
+              </div>
+            </div>
+            <div className="event-detail">
+              <span className="event-detail-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+              </span>
+              <div>
+                <span className="event-detail-label">LUGAR</span>
+                <address>
+                  Av. Javier Prado Oeste 757, piso 21
+                  <br />
+                  Magdalena del Mar{" "}
+                  <span className="event-building">Edificio Securitas</span>
+                </address>
+              </div>
+            </div>
+          </section>
           <div className="intro-note">
             <span className="note-icon">↗</span>
             <p>
@@ -247,6 +317,15 @@ function App() {
               de la salud.
             </p>
           </div>
+          <button
+            type="button"
+            className="program-button"
+            aria-haspopup="dialog"
+            aria-controls="program-dialog"
+            onClick={() => setProgramOpen(true)}
+          >
+            Ver programa <Arrow />
+          </button>
         </aside>
         <section className="form-card" aria-label="Inscripción al evento">
           {success ? (
@@ -493,6 +572,55 @@ function App() {
           )}
         </section>
       </main>
+      <dialog
+        id="program-dialog"
+        className="program-dialog"
+        ref={programDialog}
+        aria-labelledby="program-title"
+        onCancel={() => setProgramOpen(false)}
+        onClose={() => setProgramOpen(false)}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) setProgramOpen(false);
+        }}
+      >
+        <div className="program-dialog-content">
+          <header className="program-dialog-header">
+            <div>
+              <span className="eyebrow">PONENCIA ESPECIALIZADA</span>
+              <h2 id="program-title">Programa del evento</h2>
+            </div>
+            <button
+              type="button"
+              className="program-close"
+              aria-label="Cerrar programa"
+              autoFocus
+              onClick={() => setProgramOpen(false)}
+            >
+              ×
+            </button>
+          </header>
+          <div className="program-image-wrap">
+            <img
+              src="/consevia-programa.png"
+              width="1536"
+              height="1024"
+              alt="Programa de CONSEVIA: Gestión interdisciplinaria de la reserva ovárica. De la evaluación canalizada por la obstetra a la decisión clínica del ginecólogo. Evaluación y canalización, pruebas y marcadores clave, interpretación clínica integrada y decisión clínica. Siete bloques, 60 minutos, casos clínicos y enfoque multidisciplinario."
+            />
+          </div>
+          <div className="program-dialog-footer">
+            <a
+              href="/consevia-programa.png"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abrir imagen en tamaño completo ↗
+            </a>
+            <button type="button" onClick={() => setProgramOpen(false)}>
+              Volver al formulario
+            </button>
+          </div>
+        </div>
+      </dialog>
       <footer>
         <span>CONSEVIA</span>
         <p>Una nueva perspectiva en salud reproductiva.</p>
