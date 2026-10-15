@@ -8,7 +8,7 @@ La integración con tu Google Sheets ya está publicada y probada. Para desplega
 | `APPS_SCRIPT_SECRET` | El valor de `WRITE_SECRET` en las propiedades del proyecto de Google |
 | `FORM_TOKEN_SECRET` | Un secreto distinto, mínimo 32 caracteres. Ya generado en el `.env` privado local |
 | `PUBLIC_ORIGIN` | `https://inscripcion-nine.vercel.app` |
-| `PRIVACY_URL` | URL HTTPS de la política de privacidad aprobada de CONSEVIA |
+| `PRIVACY_URL` | `https://inscripcion-nine.vercel.app/privacidad` después de revisar y subir la política de esta entrega |
 | `PRIVACY_APPROVED` | `true` solo después de revisar y publicar esa política |
 
 Los dos secretos reales están en el archivo `.env` local del proyecto. Ese archivo es privado y no está en el ZIP: no lo subas a GitHub, no uses el prefijo `VITE_` para sus variables y no lo coloques dentro de `public`.
@@ -19,11 +19,9 @@ Cuando tengas el dominio real, configura `PUBLIC_ORIGIN` y vuelve a desplegar. H
 
 El endpoint de Apps Script es técnico: abrirlo directamente muestra `METHOD_NOT_ALLOWED`, porque los registros se envían mediante POST desde el servidor. No es el enlace que se comparte con participantes.
 
-## Diagnóstico del botón deshabilitado
+## Actualización de privacidad — 15 de octubre de 2026
 
-Se consultó el despliegue `https://inscripcion-nine.vercel.app/api/registration`: respondió `ready: false` y `privacyUrl` vacío. Esto confirma que la configuración de producción no está completa y no tiene una URL de política de privacidad. No permite determinar públicamente qué secretos faltan, ya que el servidor no los revela.
-
-Configura las seis variables para **Production** y realiza un **Redeploy**. Usa `PRIVACY_APPROVED=true` solo con una política aprobada y publicada por HTTPS. Al terminar, vuelve a abrir el formulario o recarga su página. El botón se habilita cuando el servidor devuelve `ready: true`. Marcar la casilla de consentimiento no sustituye estas variables.
+Leer `ACTUALIZAR_PRIVACIDAD.md`. Google ya está actualizado a versión 3 y conserva su URL y secretos. Publica el código actualizado y la página de privacidad juntos, y configura `PRIVACY_URL` con la ruta `/privacidad`. Conserva las demás variables. La casilla publicitaria es opcional y no habilita ni sustituye la configuración del servidor. La aprobación del texto corresponde al organizador.
 
 ## Corrección del alias de main — 14 de octubre de 2026
 

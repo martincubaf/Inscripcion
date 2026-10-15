@@ -328,6 +328,16 @@ input[type="checkbox"] {
 }
 .consent-label input {
   margin-top: 3px;
+  flex-shrink: 0;
+}
+.marketing-consent {
+  margin-top: 20px;
+}
+.marketing-help {
+  margin: 8px 0 0 26px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #655b70;
 }
 .privacy-link,
 .privacy-pending {

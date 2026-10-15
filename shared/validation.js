@@ -1,3 +1,4 @@
+export const policyVersion = "2026-10-15";
 export const professions = [
   "Obstetra",
   "Médico",
@@ -134,6 +135,17 @@ export function validate(input) {
     errors.email = "Ingresa un correo electrónico válido.";
   data.email = data.email.toLowerCase();
   data.consent = input?.consent === true;
+  data.marketingConsent = input?.marketingConsent === true;
+  data.policyVersion =
+    input?.policyVersion === policyVersion ? policyVersion : "";
+  if (input?.policyVersion !== undefined && !data.policyVersion)
+    errors.consent =
+      "La política se ha actualizado. Recarga la página antes de inscribirte.";
+  if (
+    input?.marketingConsent !== undefined &&
+    typeof input.marketingConsent !== "boolean"
+  )
+    errors.marketingConsent = "Selecciona una opción de publicidad válida.";
   if (!data.consent)
     errors.consent = "Debes aceptar la política de privacidad.";
   return { data, errors, valid: Object.keys(errors).length === 0 };

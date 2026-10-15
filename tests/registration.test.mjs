@@ -12,6 +12,7 @@ const data = {
   email: "prueba@example.com",
   attends: "No",
   consent: true,
+  policyVersion: "2026-10-15",
 };
 const env = {
   APPS_SCRIPT_URL: "https://script.google.com/test",
@@ -123,7 +124,13 @@ test("solo confirma recibo guardado con ID coincidente", async () => {
     const payload = JSON.parse(opts.body);
     assert.equal(payload.secret, env.APPS_SCRIPT_SECRET);
     assert.equal(payload.data.phone, "+51987654321");
-    return Response.json({ ok: true, saved: true, id });
+    return Response.json({
+      ok: true,
+      saved: true,
+      id,
+      schemaVersion: 2,
+      marketingConsent: false,
+    });
   });
   assert.equal(res.status, 200);
   assert.equal((await res.json()).id, id);
@@ -163,9 +170,11 @@ function gasHarness() {
           return this;
         },
         findNext() {
-          return rows.slice(r - 1, r - 1 + n).some((row) => row[0] === id)
-            ? {}
-            : null;
+          const index = rows.findIndex(
+            (row, index) =>
+              index >= r - 1 && index < r - 1 + n && row[0] === id,
+          );
+          return index < 0 ? null : { getRow: () => index + 1 };
         },
       };
     },
@@ -227,7 +236,11 @@ function gasHarness() {
           second: "2-digit",
           hourCycle: "h23",
         }).format(date);
-        return format === "yyyy-MM-dd" ? parts.slice(0, 10) : parts.slice(11);
+        return format === "yyyy-MM-dd"
+          ? parts.slice(0, 10)
+          : format === "HH:mm:ss"
+            ? parts.slice(11)
+            : parts;
       },
     },
   };
@@ -257,13 +270,13 @@ function gasHarness() {
       }),
   };
 }
-test("Apps Script simulado: escribe 18 columnas, hora Perú y deduplica", () => {
+test("Apps Script simulado: escribe 22 columnas, hora Perú y deduplica", () => {
   const gas = gasHarness();
   const id = randomUUID();
   assert.equal(gas.send(id).saved, true);
   assert.equal(gas.send(id).saved, true);
   assert.equal(gas.rows.length, 2);
-  assert.equal(gas.rows[1].length, 18);
+  assert.equal(gas.rows[1].length, 22);
   assert.equal(gas.rows[1][0], id);
   assert.match(gas.rows[1][1], /^\d{4}-\d{2}-\d{2}$/);
   assert.match(gas.rows[1][2], /^\d{2}:\d{2}:\d{2}$/);
@@ -323,7 +336,14 @@ test("CONSEVIA: acepta producción y el alias de main con el mismo ajuste", asyn
       const result = await handle(
         request({ id }, origin),
         { ...env, PUBLIC_ORIGIN: configured },
-        async () => Response.json({ ok: true, saved: true, id }),
+        async () =>
+          Response.json({
+            ok: true,
+            saved: true,
+            id,
+            schemaVersion: 2,
+            marketingConsent: false,
+          }),
       );
       assert.equal(result.status, 200);
       assert.equal((await result.json()).id, id);
@@ -375,8 +395,91 @@ test("origen configurado: normaliza espacios y barra final, y admite lista expl�
     const result = await handle(
       request({ id }, origin),
       { ...env, PUBLIC_ORIGIN: configured },
-      async () => Response.json({ ok: true, saved: true, id }),
+      async () =>
+        Response.json({
+          ok: true,
+          saved: true,
+          id,
+          schemaVersion: 2,
+          marketingConsent: false,
+        }),
     );
     assert.equal(result.status, 200);
   }
+});
+
+test("publicidad opcional, nunca implícita y sin coerción de cadenas", () => {
+  assert.equal(validate(data).valid, true);
+  assert.equal(validate(data).data.marketingConsent, false);
+  assert.equal(
+    validate({ ...data, marketingConsent: true }).data.marketingConsent,
+    true,
+  );
+  assert.equal(validate({ ...data, marketingConsent: false }).valid, true);
+  assert.equal(validate({ ...data, marketingConsent: "false" }).valid, false);
+});
+test("Sheets: registra decisión, versión, fecha y vencimiento a 30 días; reintentos conservan decisión", () => {
+  const gas = gasHarness();
+  const id = randomUUID();
+  const receipt = gas.send(id, { data: { ...data, marketingConsent: true } });
+  assert.equal(receipt.schemaVersion, 2);
+  assert.equal(receipt.marketingConsent, true);
+  assert.equal(gas.rows[1][18], "Sí");
+  assert.equal(gas.rows[1][20], "2026-10-15");
+  const start = new Date(gas.rows[1][19].replace(" ", "T") + "-05:00");
+  const end = new Date(gas.rows[1][21].replace(" ", "T") + "-05:00");
+  assert.equal(end - start, 30 * 24 * 60 * 60 * 1000);
+  assert.equal(gas.send(id).marketingConsent, true);
+  assert.equal(gas.rows.length, 2);
+  assert.equal(gas.send().marketingConsent, false);
+  assert.equal(gas.rows[2][18], "No");
+});
+test("migración conserva las 18 columnas y datos antiguos sin inventar consentimiento", () => {
+  const gas = gasHarness();
+  gas.send();
+  gas.rows.forEach((row) => row.splice(18));
+  const before = JSON.stringify(gas.rows);
+  gas.context.setupSheet();
+  assert.equal(gas.rows[0].length, 22);
+  assert.equal(JSON.stringify(gas.rows.map((row) => row.slice(0, 18))), before);
+  assert.equal(gas.rows[1][18], undefined);
+  assert.equal(gas.send(gas.rows[1][0]).code, "CONSENT_NOT_RECORDED");
+});
+test("migración rechaza columnas ocupadas sin sobrescribir", () => {
+  const gas = gasHarness();
+  gas.send();
+  gas.rows[0].splice(18);
+  gas.rows[1][18] = "dato ajeno";
+  const before = JSON.stringify(gas.rows);
+  assert.throws(() => gas.context.setupSheet());
+  assert.equal(JSON.stringify(gas.rows), before);
+});
+test("servidor exige confirmación de las autorizaciones y las transmite a Sheets", async () => {
+  const id = randomUUID();
+  for (const receipt of [
+    { ok: true, saved: true, id },
+    { ok: true, saved: true, id, schemaVersion: 2, marketingConsent: false },
+  ]) {
+    const res = await handle(
+      request({ id, data: { ...data, marketingConsent: true } }),
+      env,
+      async () => Response.json(receipt),
+    );
+    assert.equal(res.status, 502);
+  }
+  const res = await handle(
+    request({ id, data: { ...data, marketingConsent: true } }),
+    env,
+    async (_, opts) => {
+      assert.equal(JSON.parse(opts.body).data.marketingConsent, true);
+      return Response.json({
+        ok: true,
+        saved: true,
+        id,
+        schemaVersion: 2,
+        marketingConsent: true,
+      });
+    },
+  );
+  assert.equal(res.status, 200);
 });

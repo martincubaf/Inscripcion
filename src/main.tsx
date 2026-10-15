@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   validate,
+  policyVersion,
   professions,
   establishments,
   lima,
@@ -31,6 +32,7 @@ function Arrow() {
 function App() {
   const [data, setData] = useState<Data>({});
   const [consent, setConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [config, setConfig] = useState<Config | null>(null);
   const [busy, setBusy] = useState(false);
@@ -147,7 +149,12 @@ function App() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (gate.current) return;
-    const result = validate({ ...data, consent });
+    const result = validate({
+      ...data,
+      consent,
+      marketingConsent,
+      policyVersion,
+    });
     setErrors(result.errors);
     if (!result.valid) {
       setMessage("Revisa los campos indicados para continuar.");
@@ -515,23 +522,39 @@ function App() {
                       inscripción al evento.
                     </span>
                   </label>
-                  {config?.privacyUrl ? (
-                    <a
-                      className="privacy-link"
-                      href={config.privacyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Leer política de privacidad ↗
-                    </a>
-                  ) : (
-                    <span className="privacy-pending">
-                      Política de privacidad pendiente de publicación.
-                    </span>
-                  )}
+                  <a
+                    className="privacy-link"
+                    href="/privacidad"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Leer política de privacidad ↗
+                  </a>
                   {errors.consent && (
                     <small className="error">{errors.consent}</small>
                   )}
+                  <label className="consent-label marketing-consent">
+                    <input
+                      id="marketingConsent"
+                      name="marketingConsent"
+                      type="checkbox"
+                      checked={marketingConsent}
+                      onChange={(e) => setMarketingConsent(e.target.checked)}
+                      disabled={busy}
+                      aria-describedby="marketing-help"
+                    />
+                    <span>
+                      <strong>Opcional.</strong> Autorizo a Innovagen Diagnostic
+                      Group a enviarme publicidad de CONSEVIA por correo
+                      electrónico y WhatsApp durante los 30 días siguientes a mi
+                      inscripción.
+                    </span>
+                  </label>
+                  <p id="marketing-help" className="marketing-help">
+                    Puedes inscribirte sin marcar esta casilla y retirar tu
+                    autorización en cualquier momento escribiendo a
+                    laboratorio@innovagen.pe.
+                  </p>
                 </div>
                 <div className="trap" aria-hidden="true">
                   <label>
@@ -565,7 +588,7 @@ function App() {
                       stroke="currentColor"
                     />
                   </svg>
-                  Tus datos se utilizarán para gestionar este evento.
+                  Tus datos se tratarán según las autorizaciones que elijas.
                 </p>
               </form>
             </>

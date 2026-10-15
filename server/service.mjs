@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { validate } from "../shared/validation.js";
+import { validate, policyVersion } from "../shared/validation.js";
 const json = (body, status = 200) =>
   Response.json(body, {
     status,
@@ -99,6 +99,14 @@ export async function handle(request, env = process.env, fetcher = fetch) {
   )
     return json({ message: "Identificador inválido." }, 400);
   const result = validate(body.data);
+  if (result.data.policyVersion !== policyVersion)
+    return json(
+      {
+        message:
+          "La política se ha actualizado. Recarga la página y revisa tus autorizaciones antes de inscribirte.",
+      },
+      422,
+    );
   if (!result.valid)
     return json(
       { message: "Revisa los campos indicados.", errors: result.errors },
@@ -128,6 +136,21 @@ export async function handle(request, env = process.env, fetcher = fetch) {
     });
     if (!upstream.ok) throw new Error("upstream");
     const receipt = await upstream.json();
+    if (
+      receipt?.ok === true &&
+      receipt.saved === true &&
+      receipt.id === body.id &&
+      (receipt.schemaVersion !== 2 ||
+        receipt.marketingConsent !== result.data.marketingConsent)
+    ) {
+      return json(
+        {
+          message:
+            "La integración de Google Sheets necesita actualizarse para confirmar tus autorizaciones. Contacta al organizador antes de reintentar.",
+        },
+        502,
+      );
+    }
     if (
       receipt?.ok !== true ||
       receipt.id !== body.id ||

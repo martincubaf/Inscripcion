@@ -1,0 +1,20 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+[[redirects]]
+  from = "/privacidad"
+  to = "/privacidad.html"
+  status = 200
+[[redirects]]
+  from = "/api/registration"
+  to = "/.netlify/functions/registration"
+  status = 200
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
